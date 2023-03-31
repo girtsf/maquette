@@ -304,7 +304,16 @@ export let createDom = (
           if (projectionOptions.namespace !== undefined) {
             domNode = vnode.domNode = doc.createElementNS(projectionOptions.namespace, found);
           } else {
-            domNode = vnode.domNode = vnode.domNode || doc.createElement(found);
+            if (!vnode.domNode) {
+              if (vnode.properties && vnode.properties.is !== undefined) {
+                // If "is" is specified to create a customized built-in web
+                // element, it must be specified at createElement call time.
+                vnode.domNode = doc.createElement(found, {is: vnode.properties.is});
+              } else {
+                vnode.domNode = doc.createElement(found);
+              }
+            }
+            domNode = vnode.domNode;
             if (found === "input" && vnode.properties && vnode.properties.type !== undefined) {
               // IE8 and older don't support setting input type after the DOM Node has been added to the document
               (domNode as Element).setAttribute("type", vnode.properties.type);
